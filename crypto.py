@@ -45,7 +45,7 @@ def decryptar(ar):
 		ar = subbytes(ar, isbox)
 		ar = matvec(ar, imat)
 	return ar.tolist()
-def encryptflag(s):
-	return unparseflag(encryptar(parseflag(s)))
 def decryptflag(s):
+	return unparseflag(encryptar(parseflag(s)))
+def encryptflag(s):
 	return unparseflag(decryptar(parseflag(s)))

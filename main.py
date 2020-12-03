@@ -12,11 +12,14 @@ import config
 
 last_reload = 0
 
+bind_address = '192.168.88.16'
+bind_port = 80
 
 async def pipe(reader, writer, is_from_server, buf):
     try:
         while not reader.at_eof():
             data = await reader.read(2048)
+            #data = await reader.readline()
             from_addr, from_port = writer.get_extra_info('sockname')
             to_addr, to_port = writer.get_extra_info('peername')
             buf[int(is_from_server)] = (buf[int(is_from_server)] + data)[-config.BUFSIZE:]
@@ -102,18 +105,24 @@ def process_data(
     # TestFlag = 'FRS485V58ADVL5QVUOJBTX3C904VRLR='
     # TestFlag = encryptflag(TestFlag)
     
-    print(data)
+    
+    print("BEFORE ", data)
+    
+    data = data.replace(bind_address.encode(), config.PROXY_REMOTE_ADDR.encode())
     
     if is_from_server:
-        data = re.sub(rb'[A-Z0-9]{31}=', lambda a: encryptflag(a.group(0).decode()).encode(), data)
-    else:
         data = re.sub(rb'[A-Z0-9]{31}=', lambda a: decryptflag(a.group(0).decode()).encode(), data)
+        print("FROM SERVER")
+    else:
+        data = re.sub(rb'[A-Z0-9]{31}=', lambda a: encryptflag(a.group(0).decode()).encode(), data)
+        print("TO SERVER")
+        
+    print("AFTER ", data)
     return data
-
+    
+    
 
 if __name__ == '__main__':
-    bind_address = '0.0.0.0'
-    bind_port = 80
 
     ssl_context = None
     if config.PROXY_BIND_SSL:
