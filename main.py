@@ -4,7 +4,7 @@ import ssl
 import sys
 import time
 import traceback
-from crypto import encryptar, decryptar, encryptflag, decryptflag
+from crypto import encryptflag, decryptflag
 from importlib import reload
 from typing import List
 
@@ -12,8 +12,8 @@ import config
 
 last_reload = 0
 
-bind_address = '192.168.88.16'
-bind_port = 80
+bind_address = '0.0.0.0'
+bind_port = 1338
 
 async def pipe(reader, writer, is_from_server, buf):
     try:
@@ -111,10 +111,10 @@ def process_data(
     data = data.replace(bind_address.encode(), config.PROXY_REMOTE_ADDR.encode())
     
     if is_from_server:
-        data = re.sub(rb'[A-Z0-9]{31}=', lambda a: decryptflag(a.group(0).decode()).encode(), data)
+        data = re.sub(rb'\b[A-Z0-9]{31}(=|%3d|%3D)', lambda a: decryptflag(a.group(0).decode()).encode(), data)
         print("FROM SERVER")
     else:
-        data = re.sub(rb'[A-Z0-9]{31}=', lambda a: encryptflag(a.group(0).decode()).encode(), data)
+        data = re.sub(rb'\b[A-Z0-9]{31}(=|%3d|%3D)', lambda a: encryptflag(a.group(0).decode()).encode(), data)
         print("TO SERVER")
         
     print("AFTER ", data)

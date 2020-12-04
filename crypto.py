@@ -1,8 +1,10 @@
 import numpy as np
+import time
+import random
 def parseflag(s):
-	return ["0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".index(c) for c in s[0:31]]
-def unparseflag(ar):
-	return ''.join(["0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i] for i in ar]) + "="
+	return (["0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".index(c) for c in s[0:31]], s[31:])
+def unparseflag(ar, suffix):
+	return ''.join(["0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[i] for i in ar]) + suffix
 #we have a 'block cipher' modulo 36 with blocks sized 31
 #this is mostly inspired by AES (but not the same) (but our opponents don't know how this works, so it should be fine)
 def matvec(ar, mat):
@@ -46,6 +48,28 @@ def decryptar(ar):
 		ar = matvec(ar, imat)
 	return ar.tolist()
 def decryptflag(s):
-	return unparseflag(encryptar(parseflag(s)))
+	ar, suf = parseflag(s)
+	return unparseflag(encryptar(ar), suf)
 def encryptflag(s):
-	return unparseflag(decryptar(parseflag(s)))
+	ar, suf = parseflag(s)
+	return unparseflag(decryptar(ar), suf)
+
+def testflag():
+	for _ in range(100):
+		enc = ''.join([random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ') for i in range(31)]) + random.choice(['=', '%3d', '%3D'])
+		e0 = enc
+		t1 = time.time()
+		for i in range(1000):
+			enc = encryptflag(enc)
+		for i in range(1000):
+			enc = decryptflag(enc)
+		if e0 != enc: print("invalid:", e0, enc)
+		t2 = time.time()
+		#print(enc)
+		print(_, end='\r')
+
+if __name__ == '__main__':
+	print('=:', encryptflag('A'*31 + '='))
+	print('%3d:', encryptflag('A'*31 + '%3d'))
+	print('%3D:', encryptflag('A'*31 + '%3D'))
+	testflag()
