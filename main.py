@@ -12,8 +12,8 @@ import config
 
 last_reload = 0
 
-bind_address = '0.0.0.0'
-bind_port = 1338
+bind_address = '10.118.101.10'
+bind_port = 8284
 
 async def pipe(reader, writer, is_from_server, buf):
     try:
